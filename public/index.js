@@ -18,11 +18,14 @@ const translateHandler = async () => {
   });
 
   const parsed = await data.json();
+  console.log("Server Response:", parsed); 
+  
   if (parsed.error) {
+    console.log(parsed.error,'error')
     errorArea.innerText = JSON.stringify(parsed);
     return;
   }
-
+  console.log('hier', parsed.translation)
   translatedArea.innerHTML = parsed.translation;
   return;
 };
