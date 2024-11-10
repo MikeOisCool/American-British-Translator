@@ -15,7 +15,7 @@ class Translator {
 
    translation(text, locale) {
       console.log(text, locale)
-      
+      console.log('hallo')
 
       if (text == null || locale == null) {
          return { error: 'Required field(s) missing' };
