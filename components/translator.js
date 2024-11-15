@@ -78,6 +78,7 @@ class Translator {
          Object.entries(americanToBritishTitles).forEach(([key, value]) => {
             const regex = new RegExp(`${key.replace('.', '\\.')}`, "gi");
             console.log(`Regex für ${key}: ${regex}`);
+           
             newString = newString.replace(regex, (match) => {
                const correctedValue = match.charAt(0).toUpperCase() + value.slice(1);
          console.log(`Ersetzung gefunden und durchgeführt für: ${match} -> ${correctedValue}`);
