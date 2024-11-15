@@ -42,87 +42,97 @@ class Translator {
       // }
       const message = { text, translation: 'Everything looks good to me!' }
       let wordsAll = {};
-
+      // console.log(text)
       if (locale === 'american-to-british') {
-        // const americanToBritishOnly = this.invertObject(britishOnly)
+        //const americanToBritishOnly = this.invertObject(britishOnly)
          wordsAll = Object.assign({}, americanOnly, americanToBritishSpelling, americanToBritishTitles);
       } else if (locale === 'british-to-american') {
         // const britshToAmericanOnly = this.invertObject(americanOnly)
          const britishToAmericanSpelling = this.invertObject(americanToBritishSpelling);
          const britishToAmericanTitles = this.invertObject(americanToBritishTitles);
 
-         wordsAll = Object.assign({}, britishToAmericanSpelling, britishToAmericanTitles, britishOnly)
+         wordsAll = Object.assign({}, britishToAmericanSpelling, britishOnly, britishToAmericanTitles)
       }
       const result = this.replaceWords(text, wordsAll, locale);
+ // Britisch zu Amerikanisch
+//  if (locale === 'british-to-american') {
+//    // const britishToAmericanTitles = this.invertObject(americanToBritishTitles);
+//       result.text = result.text.replace(/\b(dr|mr|mrs|ms|mx|prof)\b/gi, (match) => {
+//          result.replaced = true;
+//           return `<span class="highlight">${match.charAt(0).toUpperCase() + match.slice(1) }</span>`;
+//       });
+//   }
+  console.log(result.text,'<-----------')
+
+
+
       return result.replaced ? { text, translation: result.text } : message
 
    }
+   translateTitle(text, locale) {
+      let newString = text;
+      let replaced = false;
+      
+      // Übersetzung der Titel: Entfernen des Punktes bei amerikanischen Titeln, falls nötig
+      if (locale === 'american-to-british') {
+         Object.entries(americanToBritishTitles).forEach(([key, value]) => {
+            const regex = new RegExp(`${key.replace('.', '\\.')}`, "gi");
+            console.log(`Regex für ${key}: ${regex}`);
+            newString = newString.replace(regex, (match) => {
+               const correctedValue = match.charAt(0).toUpperCase() + value.slice(1);
+         console.log(`Ersetzung gefunden und durchgeführt für: ${match} -> ${correctedValue}`);
+         return `<span class="highlight">${correctedValue}</span>`;
+            })
+         });
+      } else if (locale === 'british-to-american') {
+         // Wenn wir von Britisch nach Amerikanisch übersetzen, fügen wir den Punkt wieder hinzu
+         Object.keys(americanToBritishTitles).forEach((key) => {
+            const regex = new RegExp(`\\b${key}\\b(?!\\.)`, "gi");
+            newString = newString.replace(regex, `${key}.`);  // Punkt hinzufügen bei Titeln wie "Dr"
+         });
+      }
+      if (newString !== text) {
+         replaced = true; // Nur wenn Änderungen vorgenommen wurden
+      }
+      return { text: newString, replaced };
+   }
 
    replaceWords(text, mapping, locale) {
-      // const punctMap = {
-      //    'american-to-british' : { ':': '.'},
-      //    'british-to-american' : { '.': ':'}
-      // }
-
       let replaced = false;
-
-      // Reguläre Ausdrücke für Titel (mit und ohne Punkt)
-    const regexPatternForTitles = locale === "american-to-british"
-    ? /\b(dr)\b(?!\.)|\b(mrs)\b(?!\.)|\b(mr)\b(?!\.)|\b(ms)\b(?!\.)|\b(mx)\b(?!\.)|\b(prof)\b(?!\.)/gi
-    : /\b(dr\.)\b|\b(mrs\.)\b|\b(mr\.)\b|\b(ms\.)\b|\b(mx\.)\b|\b(prof\.)\b/gi;
-
-    text = text.replace(regexPatternForTitles, (match, title) => {
-      let correctedTitle = title;
-      if (locale === "american-to-british" && !title.includes('.')) {
-        correctedTitle += '.';  // Punkt hinzufügen
-      } else if (locale === "british-to-american" && title.includes('.')) {
-        correctedTitle = title.replace('.', '');  // Punkt entfernen
-      }
-      replaced = true;
-      return `<span class="highlight">${correctedTitle}</span>`;
-    });
-
-      console.log("Beginn der Ersetzung:", text);
+      console.log("Beginn der allgemeinen Wörter-Ersetzung:", text);
 
       for (let [key, value] of Object.entries(mapping)) {
-         const highlightedValue = `<span class="highlight">${value}</span>`
-
+         const highlightedValue = `<span class="highlight">${value}</span>`;
          const regexPattern = locale === "american-to-british"
-         ? `\\b${key.replace('.', '\\.?')}\\b`  // Erlaubt sowohl mit als auch ohne Punkt
-         : `\\b${key.replace('.', '\\.')}\\b`;
-
-         const regex = new RegExp(regexPattern, 'gi')
-
+            ? `\\b${key.replace(' ',' ')}\\b`
+            : `\\b${key.replace('', '')}\\b`;
+   
+         const regex = new RegExp(regexPattern, 'gi');
          if (regex.test(text)) {
-            text = text.replace(regex, (match, space) => `${highlightedValue}`)
-
+            text = text.replace(regex, `${highlightedValue}`);
             replaced = true;
             console.log(`Ersetzung gefunden und durchgeführt für: ${key} -> ${value}`);
          }
       }
-
-      
-
-
-
+      console.log(text,'vorher')
+      // Titel-Ersetzung: Übersetze Titel, indem du den Punkt entfernst oder hinzufügst
+      const titleResult = this.translateTitle(text, locale);
+      text = titleResult.text;
+      replaced = replaced || titleResult.replaced
+      console.log(text,'nacher')
+      // Uhrzeit-Konvertierung
       const timePattern = locale === 'american-to-british' ? /(\d{1,2}):(\d{2})/g : /(\d{1,2})\.(\d{2})/g;
       const punctChar = locale === 'american-to-british' ? '.' : ':';
-
+   
       text = text.replace(timePattern, (match, p1, p2) => {
-
          const formattedTime = `<span class="highlight">${p1}${punctChar}${p2}</span>`;
          replaced = true;
-         console.log(formattedTime, 'formattedTime')
-         return formattedTime
+         return formattedTime;
       });
-
-      // if (!replaced) {
-      //    return { text, translation: 'Everything looks good to me!' };
-      // }
-      console.log(text, replaced, 'text und replaced')
-      return { text, replaced }
-   }   // if (!highlightedValue) { return message}
-   // return replaced ? text : null
+   
+      console.log(text, replaced, 'text und replaced');
+      return { text, replaced };
+   }
 }
 
 
