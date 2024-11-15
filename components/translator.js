@@ -14,8 +14,8 @@ class Translator {
 
 
    translation(text, locale) {
-      console.log(text, locale)
-      console.log('hallo')
+      // console.log(text, locale)
+      // console.log('hallo'  )
 
       if (text == null || locale == null) {
          return { error: 'Required field(s) missing' };
@@ -62,13 +62,21 @@ class Translator {
 //           return `<span class="highlight">${match.charAt(0).toUpperCase() + match.slice(1) }</span>`;
 //       });
 //   }
-  console.log(result.text,'<-----------')
+ // console.log(result.text,'<-----------')
 
 
 
       return result.replaced ? { text, translation: result.text } : message
 
    }
+
+//    addSpacesToTitles(text) {
+//       const titleRegex = /\b(Dr|Prof|Mr|Mrs|Ms)\b([A-Za-z])/g;
+//       return text.replace(titleRegex, (match, title, name) => {
+//           return title + ' ' + name;  // Füge ein Leerzeichen zwischen dem Titel und dem Namen hinzu
+//       });
+//   }
+
    translateTitle(text, locale) {
       let newString = text;
       let replaced = false;
@@ -77,11 +85,11 @@ class Translator {
       if (locale === 'american-to-british') {
          Object.entries(americanToBritishTitles).forEach(([key, value]) => {
             const regex = new RegExp(`${key.replace('.', '\\.')}`, "gi");
-            console.log(`Regex für ${key}: ${regex}`);
+         //   console.log(`Regex für ${key}: ${regex}`);
            
             newString = newString.replace(regex, (match) => {
                const correctedValue = match.charAt(0).toUpperCase() + value.slice(1);
-         console.log(`Ersetzung gefunden und durchgeführt für: ${match} -> ${correctedValue}`);
+         //console.log(`Ersetzung gefunden und durchgeführt für: ${match} -> ${correctedValue}`);
          return `<span class="highlight">${correctedValue}</span>`;
             })
          });
@@ -100,7 +108,7 @@ class Translator {
 
    replaceWords(text, mapping, locale) {
       let replaced = false;
-      console.log("Beginn der allgemeinen Wörter-Ersetzung:", text);
+      // console.log("Beginn der allgemeinen Wörter-Ersetzung:", text);
 
       for (let [key, value] of Object.entries(mapping)) {
          const highlightedValue = `<span class="highlight">${value}</span>`;
@@ -112,15 +120,18 @@ class Translator {
          if (regex.test(text)) {
             text = text.replace(regex, `${highlightedValue}`);
             replaced = true;
-            console.log(`Ersetzung gefunden und durchgeführt für: ${key} -> ${value}`);
+            // console.log(`Ersetzung gefunden und durchgeführt für: ${key} -> ${value}`);
          }
       }
-      console.log(text,'vorher')
+      // console.log(text,'vorher')
       // Titel-Ersetzung: Übersetze Titel, indem du den Punkt entfernst oder hinzufügst
       const titleResult = this.translateTitle(text, locale);
       text = titleResult.text;
       replaced = replaced || titleResult.replaced
-      console.log(text,'nacher')
+      // console.log(text,'nacher')
+      // text = this.addSpacesToTitles(text)
+      // console.log(text, 'ohne space')
+     
       // Uhrzeit-Konvertierung
       const timePattern = locale === 'american-to-british' ? /(\d{1,2}):(\d{2})/g : /(\d{1,2})\.(\d{2})/g;
       const punctChar = locale === 'american-to-british' ? '.' : ':';
@@ -131,7 +142,7 @@ class Translator {
          return formattedTime;
       });
    
-      console.log(text, replaced, 'text und replaced');
+      // console.log(text, replaced, 'text und replaced');
       return { text, replaced };
    }
 }
